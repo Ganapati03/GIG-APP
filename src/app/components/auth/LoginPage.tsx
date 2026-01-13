@@ -126,26 +126,7 @@ export function LoginPage({ onSwitchToSignup }: LoginPageProps) {
                 )}
               </Button>
 
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-card px-2 text-muted-foreground">
-                    Demo Accounts
-                  </span>
-                </div>
-              </div>
 
-              <div className="space-y-2 p-3 bg-muted/50 rounded-lg text-xs">
-                <p className="font-semibold">Try these credentials:</p>
-                <div className="space-y-1">
-                  <p>• alex@example.com (Client & Freelancer)</p>
-                  <p>• sarah@example.com (Freelancer)</p>
-                  <p>• mike@example.com (Client)</p>
-                </div>
-                <p className="text-muted-foreground">Password: any</p>
-              </div>
             </form>
 
             <div className="mt-6 text-center">

@@ -9,6 +9,7 @@ import { SignupPage } from "./auth/SignupPage";
 import { MessagesPage } from "./messaging/MessagesPage";
 import { useAuth } from "./AuthContext";
 import { gigAPI, bidAPI, messageAPI } from "../../lib/api";
+import { useSocket } from "../../lib/socket";
 
 export type Job = {
   id: string;
@@ -222,6 +223,122 @@ export function GigFlowApp() {
 
     fetchData();
   }, [isAuthenticated, user]);
+
+  // Real-time updates via Socket.io
+  const { socket } = useSocket(user?.id);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    // Listen for new bids (as a client)
+    socket.on('new_bid', (newBid: any) => {
+      const mappedBid: Bid = {
+        id: newBid._id,
+        jobId: newBid.gigId,
+        freelancerId: newBid.freelancerId._id || newBid.freelancerId,
+        freelancerName: newBid.freelancerId.name || "Unknown",
+        proposal: newBid.message,
+        amount: newBid.price,
+        status: newBid.status,
+        createdAt: new Date(newBid.createdAt)
+      };
+
+      setBids((prev) => {
+        if (prev.some(b => b.id === mappedBid.id)) return prev;
+        return [mappedBid, ...prev];
+      });
+
+      addNotification({
+        message: `New bid received from ${mappedBid.freelancerName}`,
+        type: "info"
+      });
+    });
+
+    // Listen for "You are Hired" (as a freelancer)
+    socket.on('hired', (data: any) => {
+      addNotification({
+        message: data.message,
+        type: "success"
+      });
+
+      setJobs(prev => prev.map(job => 
+        job.id === data.gigId ? { ...job, status: 'assigned', assignedTo: currentUserId } : job
+      ));
+
+      setBids(prev => prev.map(bid => 
+        bid.jobId === data.gigId && bid.freelancerId === currentUserId 
+          ? { ...bid, status: 'hired' } 
+          : bid
+      ));
+    });
+
+    // Listen for new messages
+    socket.on('new_message', (msg: any) => {
+      const newMessage: Message = {
+        id: msg._id,
+        conversationId: msg.conversationId,
+        senderId: msg.senderId,
+        senderName: msg.senderName || "User",
+        recipientId: currentUserId,
+        content: msg.content,
+        timestamp: new Date(msg.createdAt),
+        read: false,
+      };
+
+      setMessages((prev) => {
+        if (prev.some(m => m.id === newMessage.id)) return prev;
+        return [newMessage, ...prev];
+      });
+
+      setConversations((prev) => {
+        const exists = prev.some(c => c.id === msg.conversationId);
+        if (exists) {
+          return prev.map(c => c.id === msg.conversationId ? { ...c, lastMessage: newMessage } : c);
+        }
+        return prev;
+      });
+
+      addNotification({
+        message: `New message from ${newMessage.senderName}`,
+        type: "info"
+      });
+    });
+
+    // Listen for new jobs (Broadcasted to everyone)
+    socket.on('new_job', (job: any) => {
+        if (user?.role === 'freelancer' || user?.role === 'both') {
+            if (job.ownerId._id === currentUserId) return;
+
+            const newJob: Job = {
+                id: job._id,
+                title: job.title,
+                description: job.description,
+                budget: job.budget,
+                status: job.status,
+                clientId: job.ownerId._id || job.ownerId,
+                assignedTo: job.hiredFreelancerId,
+                createdAt: new Date(job.createdAt)
+            };
+
+            setJobs(prev => {
+                if (prev.some(j => j.id === newJob.id)) return prev;
+                return [newJob, ...prev];
+            });
+            
+             addNotification({
+                message: `New Job Posted: ${newJob.title}`,
+                type: "info"
+            });
+        }
+    });
+
+    return () => {
+      socket.off('new_bid');
+      socket.off('hired');
+      socket.off('new_message');
+      socket.off('new_job');
+    };
+  }, [socket, user]);
 
   // Show loading while checking auth
   if (authLoading || loading) {
