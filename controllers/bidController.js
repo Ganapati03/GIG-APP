@@ -79,6 +79,9 @@ export const createBid = async (req, res, next) => {
     // Populate freelancer info
     await bid.populate('freelancerId', 'name email rating completedGigs');
 
+    // Send real-time notification to gig owner
+    sendNotificationToUser(gig.ownerId, 'new_bid', bid);
+
     res.status(201).json({
       success: true,
       message: 'Bid submitted successfully',
