@@ -192,7 +192,8 @@ export const hireBid = async (req, res, next) => {
     }
 
     // Authorization: Only gig owner can hire
-    if (gig.ownerId.toString() !== req.user._id.toString()) {
+    const ownerId = gig.ownerId._id || gig.ownerId;
+    if (ownerId.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'Only the gig owner can hire freelancers'
