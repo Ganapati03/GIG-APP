@@ -34,7 +34,7 @@ export function PostJobDialog({ open, onOpenChange }: PostJobDialogProps) {
       description,
       budget: parseFloat(budget),
       status: "open",
-      clientId: "user-1",
+      clientId: "", // explicit placeholder, though ignored by addJob
     });
 
     setStep("success");
