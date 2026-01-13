@@ -146,6 +146,8 @@ export const logout = async (req, res, next) => {
   try {
     res.cookie('token', '', {
       httpOnly: true,
+      secure: true, // Always true for SameSite=None
+      sameSite: 'None', // Required for cross-origin
       expires: new Date(0)
     });
 
