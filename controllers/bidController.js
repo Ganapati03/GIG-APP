@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import Bid from '../models/Bid.js';
 import Gig from '../models/Gig.js';
 import User from '../models/User.js';
-import { sendHireNotification, sendRejectNotification } from '../config/socket.js';
+import { sendHireNotification, sendRejectNotification, sendNotificationToUser } from '../config/socket.js';
 
 /**
  * @route   POST /api/bids
@@ -236,7 +236,7 @@ export const hireBid = async (req, res, next) => {
 
     // Notify rejected freelancers
     rejectedBids.forEach(rejectedBid => {
-      sendRejectNotification(rejectedBid.freelancerId, gig.title, gig._id);
+      sendRejectNotification(rejectedBid.freelancerId, gig.title, gig._id, req.user.name);
     });
 
     // 4. Update freelancer's completed gigs count

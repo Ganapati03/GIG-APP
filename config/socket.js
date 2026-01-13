@@ -87,9 +87,10 @@ export const sendHireNotification = (freelancerId, gigTitle, gigId) => {
 /**
  * Send reject notification
  */
-export const sendRejectNotification = (freelancerId, gigTitle, gigId) => {
+export const sendRejectNotification = (freelancerId, gigTitle, gigId, clientName) => {
+  const rejectedBy = clientName ? ` by ${clientName}` : '';
   sendNotificationToUser(freelancerId, 'bid_rejected', {
-    message: `Your bid for "${gigTitle}" was not selected.`,
+    message: `Your bid for "${gigTitle}" was not selected${rejectedBy}.`,
     gigId,
     timestamp: new Date()
   });
