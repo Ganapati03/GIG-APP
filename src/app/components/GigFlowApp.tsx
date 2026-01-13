@@ -272,6 +272,20 @@ export function GigFlowApp() {
       ));
     });
 
+    // Listen for "Bid Rejected"
+    socket.on('bid_rejected', (data: any) => {
+      addNotification({
+        message: data.message,
+        type: "info"
+      });
+
+      setBids(prev => prev.map(bid => 
+        bid.jobId === data.gigId && bid.freelancerId === currentUserId 
+          ? { ...bid, status: 'rejected' } 
+          : bid
+      ));
+    });
+
     // Listen for new messages
     socket.on('new_message', (msg: any) => {
       const newMessage: Message = {
@@ -335,6 +349,7 @@ export function GigFlowApp() {
     return () => {
       socket.off('new_bid');
       socket.off('hired');
+      socket.off('bid_rejected');
       socket.off('new_message');
       socket.off('new_job');
     };
