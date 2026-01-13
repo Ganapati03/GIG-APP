@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import Bid from '../models/Bid.js';
 import Gig from '../models/Gig.js';
 import User from '../models/User.js';
-import { sendHireNotification } from '../config/socket.js';
+import { sendHireNotification, sendRejectNotification } from '../config/socket.js';
 
 /**
  * @route   POST /api/bids
@@ -217,6 +217,14 @@ export const hireBid = async (req, res, next) => {
     await bid.save();
 
     // 3. Reject all other bids for this gig
+    // First, find them to notify
+    const rejectedBids = await Bid.find({
+      gigId: gig._id,
+      _id: { $ne: bidId },
+      status: 'pending'
+    });
+
+    // Then update status
     await Bid.updateMany(
       {
         gigId: gig._id,
@@ -225,6 +233,11 @@ export const hireBid = async (req, res, next) => {
       },
       { status: 'rejected' }
     );
+
+    // Notify rejected freelancers
+    rejectedBids.forEach(rejectedBid => {
+      sendRejectNotification(rejectedBid.freelancerId, gig.title, gig._id);
+    });
 
     // 4. Update freelancer's completed gigs count
     await User.findByIdAndUpdate(
