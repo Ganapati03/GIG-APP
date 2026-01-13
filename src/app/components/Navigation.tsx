@@ -14,7 +14,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./ui/sheet";
 import { motion, AnimatePresence } from "motion/react";
+import { Menu } from "lucide-react";
 
 export function Navigation() {
   const { theme, setTheme } = useTheme();
@@ -243,6 +251,84 @@ export function Navigation() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden ml-2">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left">
+                  <SheetHeader>
+                    <SheetTitle className="text-left font-bold text-2xl bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                      GigFlow
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-4 mt-6">
+                    {/* Mobile Search */}
+                    <div className="relative w-full">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="search"
+                        placeholder="Search gigs..."
+                        className="pl-10 bg-muted/50"
+                      />
+                    </div>
+
+                    {/* Mobile Nav Links */}
+                    {(user?.role === "freelancer" || user?.role === "both") && (
+                      <>
+                        <Button
+                          variant={currentView === "gig-feed" ? "secondary" : "ghost"}
+                          className="justify-start"
+                          onClick={() => setCurrentView("gig-feed")}
+                        >
+                          Browse Gigs
+                        </Button>
+                        <Button
+                          variant={currentView === "my-bids" ? "secondary" : "ghost"}
+                          className="justify-start"
+                          onClick={() => setCurrentView("my-bids")}
+                        >
+                          My Bids
+                        </Button>
+                      </>
+                    )}
+                    
+                    {(user?.role === "client" || user?.role === "both") && (
+                      <Button
+                        variant={currentView === "client-dashboard" ? "secondary" : "ghost"}
+                        className="justify-start"
+                        onClick={() => setCurrentView("client-dashboard")}
+                      >
+                       My Jobs
+                      </Button>
+                    )}
+
+                    <Button
+                      variant={currentView === "messages" ? "secondary" : "ghost"}
+                      className="justify-start"
+                      onClick={() => setCurrentView("messages")}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Messages
+                    </Button>
+
+                     {(user?.role === "client" || user?.role === "both") && (
+                      <Button
+                        className="justify-start bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white"
+                        onClick={() => setCurrentView("client-dashboard")}
+                      >
+                        <Briefcase className="h-4 w-4 mr-2" />
+                        Post a Job
+                      </Button>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>
