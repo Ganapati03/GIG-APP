@@ -1,4 +1,5 @@
 import Gig from '../models/Gig.js';
+import { getIO } from '../config/socket.js';
 
 /**
  * @route   GET /api/gigs
@@ -115,6 +116,13 @@ export const createGig = async (req, res, next) => {
 
     // Populate owner info
     await gig.populate('ownerId', 'name email');
+
+    // Broadcast new job to all connected users
+    try {
+      getIO().emit('new_job', gig);
+    } catch (error) {
+      console.error('Socket emit error:', error);
+    }
 
     res.status(201).json({
       success: true,

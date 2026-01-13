@@ -2,6 +2,7 @@ import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
 import User from '../models/User.js';
 import Gig from '../models/Gig.js';
+import { sendNotificationToUser } from '../config/socket.js';
 
 /**
  * @route   POST /api/messages/conversations
@@ -164,6 +165,18 @@ export const sendMessage = async (req, res, next) => {
     conversation.lastMessage = message._id;
     conversation.updatedAt = new Date();
     await conversation.save();
+
+    // Send real-time message notification
+    const recipientId = conversation.participants.find(
+      (p) => p.toString() !== senderId.toString()
+    );
+
+    if (recipientId) {
+      sendNotificationToUser(recipientId, 'new_message', {
+        ...message.toObject(),
+        senderName: req.user.name // Add sender name for frontend display
+      });
+    }
 
     res.status(201).json({
       success: true,
