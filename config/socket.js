@@ -8,7 +8,7 @@ let io;
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.SOCKET_CORS_ORIGIN || 'http://localhost:5173',
+      origin: process.env.SOCKET_CORS_ORIGIN || 'https://gig-app.onrender.com',
       credentials: true
     }
   });
